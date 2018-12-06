@@ -1,2 +1,2 @@
 
-This folder contains my Arduion driver for the Sharp sensor
+This folder contains my Arduino driver for the Sharp sensor
