@@ -19,7 +19,7 @@ ZPH01 sensor(ss);
 
 void setup() {
   Serial.begin(9600);
-  ss.begin(9600);
+  sensor.begin(9600);
 
   Serial.println("Checking for serial data from Sensor");
 
