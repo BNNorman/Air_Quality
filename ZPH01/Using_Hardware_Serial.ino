@@ -1,25 +1,18 @@
 /***
- * Using_Sofware_Serial.ino
+ * Using_Hardware_Serial.ino
  * 
- * 
+ * Assumes that Serial2 exists
  * 
  * 
  */
 #include <ZPH01.h>
-#include <SoftwareSerial.h>
 
 
-
-#define txPin 10
-#define rxPin 9
-
-SoftwareSerial ss(rxPin,txPin);
-
-ZPH01 sensor(ss);
+ZPH01 sensor(Serial2);
 
 void setup() {
   Serial.begin(9600);
-  ss.begin(9600);
+  sensor.begin(9600);
 
   Serial.println("Checking for serial data from Sensor");
 
