@@ -13,7 +13,7 @@
 	uint32_t	sampleStartTime=0;	// time when sampling started (ms)
 	uint32_t  	lowTime=0;  		// millisec when sensorPin went low
 	uint8_t   	sensorPin=0;
-	float		cumLowTime=0;		// millisec	
+	volatile float		cumLowTime=0;		// millisec	
 	float		lastReading=-1;		// flag idicates value to be ignored	
 	uint32_t	intCount=0;
 	}
@@ -25,7 +25,7 @@
 	uint32_t	sampleStartTime=0;	// time when sampling started (ms)
 	uint32_t  	lowTime=0;  		// millisec when sensorPin went low
 	uint8_t   	sensorPin=0;
-	float		cumLowTime=0;		// millisec
+	volatile float		cumLowTime=0;		// millisec
 	float		lastReading=-1;		// flag idicates value to be ignored
 	uint32_t	intCount=0;
 	}
@@ -58,11 +58,13 @@
   
   uint32_t pm10IntCount()
 	{
+	// debugging only
 	return DSM::PM25::intCount;
 	}
 	
   uint32_t pm25IntCount()
 	{
+	// debugging only
 	return DSM::PM25::intCount;
 	}
   
@@ -71,6 +73,7 @@
 	// resets the cumulative low time then starts a new sample
     noInterrupts();
 	DSM::PM10::cumLowTime=0;
+	DSM::PM10::intCount=0;
 	DSM::PM10::sampleStartTime=millis();
 	// sensor may already be low
 	if (digitalRead(DSM::PM10::sensorPin)==0)
@@ -85,6 +88,7 @@
   	// resets the cumulative low time then starts a new sample
 	noInterrupts();
 	DSM::PM25::cumLowTime=0;
+	DSM::PM25::intCount=0;
 	DSM::PM25::sampleStartTime=millis();
 	// sensor may already be low
 	if (digitalRead(DSM::PM25::sensorPin)==0)
@@ -137,7 +141,7 @@ float pm10Ratio()
 	// been reached
 	uint32_t now=millis();
 	uint32_t elapsed=now-DSM::PM10::sampleStartTime;
-		
+	
 	// has the sample time been reached?
 	if (elapsed>=DSM::PM10::sampleTimeWindow)
 		{
@@ -148,7 +152,7 @@ float pm10Ratio()
 			}
 		
 		// cumLowTime is an int, so is elapsed
-		// division results in zero so cohearse the division into a float
+		// division results in zero so coerse the division into a float
 		return 100*((float)PM10::cumLowTime/(float)elapsed);	// percentage
 		
 		}
@@ -176,7 +180,7 @@ float pm10Ratio()
 	// returns -1 if the sample end time has not been reached
 	uint32_t now=millis();
 	uint32_t elapsed=now-DSM::PM25::sampleStartTime;
-		
+	
 	// has the sample time been reached?
 	if (elapsed>=DSM::PM25::sampleTimeWindow)
 		{
@@ -187,7 +191,7 @@ float pm10Ratio()
 			}
 				
 		// cumLowTime is an int, so is elapsed
-		// division results in zero so cohearse the division into a float
+		// division results in zero so coerse the division into a float
 		return 100.0*( (float)DSM::PM25::cumLowTime/(float)elapsed);	//percentage
 		}
 		
@@ -243,17 +247,17 @@ float pm10Ratio()
     uint8_t state=digitalRead(DSM::PM25::sensorPin);
 	uint32_t now=millis();
 	
-	DSM::PM10::intCount++;
+	DSM::PM25::intCount++;
 		
 	if (state==0) 
 		{
 		// sensor has just gone low
-		DSM::PM10::lowTime=now;
+		DSM::PM25::lowTime=now;
 		return;
 		}
 	
 	// pin has gone high
-	DSM::PM10::cumLowTime=DSM::PM10::cumLowTime+now-DSM::PM10::lowTime;
+	DSM::PM25::cumLowTime=DSM::PM25::cumLowTime+now-DSM::PM25::lowTime;
 	
   }
   
