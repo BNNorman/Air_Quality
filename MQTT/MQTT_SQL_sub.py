@@ -12,6 +12,7 @@ import logging
 broker="192.168.1.44"   # PINAT
 storeDBfile="mydb"
 logFile="mqtt.log"
+topic="#"
 
 
 #############################################
@@ -163,13 +164,13 @@ def main():
     #
     logging.info("connecting to broker at "+broker)
 
-    (result,mid)=client.subscribe("#")#subscribe
+    (result,mid)=client.subscribe(topic)#subscribe
 
     if result!=MQTT_ERR_SUCCESS:
         logging.critical("Subscribe failed : " + get_MQTT_Error_String(result))
         terminate()
     else:
-        logging.info("Subscribe to topic # succeeded")
+        logging.info("Subscribe to topic "+topic+" succeeded")
 
     # we hang around here waiting for callbacks
     # until ctrl-C is pressed
