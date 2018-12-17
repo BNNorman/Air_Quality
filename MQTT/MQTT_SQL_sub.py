@@ -9,11 +9,16 @@ import paho.mqtt.client as paho
 from MQTT_Errors import *
 import logging
 
+#############################################
+#
+# config
+#
+
 broker="192.168.1.44"   # PINAT
 storeDBfile="mydb"
 logFile="mqtt.log"
 topic="#"
-
+clientID="client-003"
 
 #############################################
 #
@@ -114,7 +119,7 @@ def on_log(client,userdata,level,buf):
 #########################################################################
 def main():
 
-    global client, storeDBfile, broker
+    global client, clientID, storeDBfile, broker
     ##############################################
     #
     # connect to the database - will create a file if it doesn't exist
@@ -142,7 +147,7 @@ def main():
     #
 
     try:
-        client=paho.Client("client-001")
+        client=paho.Client(clientID)
 
         client.connect(broker)  # connect
 
