@@ -18,7 +18,7 @@ topic="#"
 #############################################
 #
 # logging output goes ONLY to the log file
-logging.basicConfig(filename="mqtt.log",format='%(asctime)s %(message)s', level=logging.DEBUG)
+logging.basicConfig(filename=logFile,format='%(asctime)s %(message)s', level=logging.DEBUG)
 
 
 ############################################
