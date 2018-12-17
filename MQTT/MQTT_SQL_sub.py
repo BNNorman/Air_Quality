@@ -19,6 +19,7 @@ storeDBfile="mydb"
 logFile="mqtt.log"
 topic="#"
 clientID="client-003"
+verbose=False
 
 #############################################
 #
@@ -54,8 +55,14 @@ def terminate():
 ############################################
 
 def on_connect(client,userdata,flags,rc):
+    global topic
     if rc==0:
         logging.info("on_connect: Connection successful")
+        (result,mid)=client.subscribe(topic)
+        if result != MQTT_ERR_SUCCESS:
+            logging.info("Subscribe to topic "+topic+" failed : " + get_MQTT_Error_String(result))
+        else:
+            logging.info("Subscribe to topic " + topic + " succeeded")
         return
 
     # anything else is a connection refusal
@@ -155,7 +162,8 @@ def main():
         client.on_message = on_message
         client.on_connect = on_connect
         client.on_subscribe = on_subscribe
-        client.on_log = on_log
+        if verbose:
+            client.on_log = on_log
         client.loop_start()  # start loop to process received messages
 
     except Exception as e:
@@ -165,18 +173,6 @@ def main():
 
     #############################################
     #
-    # get started
-    #
-    logging.info("connecting to broker at "+broker)
-
-    (result,mid)=client.subscribe(topic)#subscribe
-
-    if result!=MQTT_ERR_SUCCESS:
-        logging.critical("Subscribe failed : " + get_MQTT_Error_String(result))
-        terminate()
-    else:
-        logging.info("Subscribe to topic "+topic+" succeeded")
-
     # we hang around here waiting for callbacks
     # until ctrl-C is pressed
     try:
