@@ -35,7 +35,7 @@ broker="192.168.1.44"   # PINAT
 dbName="MQTT"
 dbHost=broker
 dbUser="brian"
-dbPassword="Retired16"
+dbPassword="xxxxxxxxx"
 logFile="mqtt.log"
 topic="#"   # subscribe to eevrything
 
