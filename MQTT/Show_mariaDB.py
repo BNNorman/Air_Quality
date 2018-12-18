@@ -1,3 +1,6 @@
+#
+# display rows in the Data table
+#
 import mysql.connector
 
 
