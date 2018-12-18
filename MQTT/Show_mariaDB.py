@@ -5,7 +5,7 @@ broker="192.168.1.44"   # PINAT
 dbName="MQTT"
 dbHost=broker
 dbUser="brian"
-dbPassword="Retired16"
+dbPassword="xxxxxxx"
 
 db = mysql.connector.connect(
     host=dbHost,
