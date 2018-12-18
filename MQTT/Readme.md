@@ -1,6 +1,6 @@
 # This folder contains my python MQTT subscription code. #
 
-MQTT_mariaDb_sub.py  - captures messages into a mariaDB database for later analysis
+MQTT_mariaDb_sub.py  - captures messages into a mariaDB database for later analysis  
 Show_mariaDb.py - just dumps the mariaDB database table to screen to get a warm glow.
 
 
