@@ -11,11 +11,11 @@
 	//using namespace std;
 	uint32_t  	sampleTimeWindow=0;	// typically 30 seconds converted to millisec
 	uint32_t	sampleStartTime=0;	// time when sampling started (ms)
-	uint32_t  	lowTime=0;  		// millisec when sensorPin went low
+	volatile uint32_t  	lowTime=0;  		// millisec when sensorPin went low
 	uint8_t   	sensorPin=0;
-	volatile float		cumLowTime=0;		// millisec	
+	volatile uint32_t		cumLowTime=0;		// millisec	
 	float		lastReading=-1;		// flag idicates value to be ignored	
-	uint32_t	intCount=0;
+	volatile uint32_t	intCount=0;
 	}
 	
 	namespace PM10
@@ -23,11 +23,11 @@
 	//using namespace std;
 	uint32_t  	sampleTimeWindow=0;	// typically 30 seconds converted to millisec
 	uint32_t	sampleStartTime=0;	// time when sampling started (ms)
-	uint32_t  	lowTime=0;  		// millisec when sensorPin went low
+	volatile uint32_t  	lowTime=0;  		// millisec when sensorPin went low
 	uint8_t   	sensorPin=0;
-	volatile float		cumLowTime=0;		// millisec
+	volatile uint32_t		cumLowTime=0;		// millisec
 	float		lastReading=-1;		// flag idicates value to be ignored
-	uint32_t	intCount=0;
+	volatile uint32_t	intCount=0;
 	}
 
   /*
@@ -126,12 +126,10 @@ float getDensity(float ratio)
 	if (ratio>6.1  and ratio<=7.95) 	return calcDensity(6.1,7.95,ratio,0.6);
 	if (ratio>7.95  and ratio<=9.2) 	return calcDensity(7.95,9.2,ratio,0.8);
 	if (ratio>9.2 and ratio<=10.7) 		return calcDensity(9.2,10.7,ratio,1.0);
+	if (ratio>10.7 and ratio<=12.0) 	return calcDensity(10.7,12.0,ratio,1.2);
 
-	// everything from 10.7% upwards
 	// the sensor range is limited to 1.4mg/m^3
-	if (ratio>=12) return 1.4;
-
-	return calcDensity(12.0,10.7,ratio,1.2);	
+	return 1.4;
 	}
 
 
@@ -225,8 +223,9 @@ float pm10Ratio()
 	
     uint8_t state=digitalRead(DSM::PM10::sensorPin);
 	uint32_t now=millis();
-	
+		
 	DSM::PM10::intCount++;
+	
 	
 	if (state==0) 
 		{
@@ -245,10 +244,10 @@ float pm10Ratio()
   {
 	
     uint8_t state=digitalRead(DSM::PM25::sensorPin);
-	uint32_t now=millis();
+	uint32_t now=0; //millis();
 	
 	DSM::PM25::intCount++;
-		
+	
 	if (state==0) 
 		{
 		// sensor has just gone low
