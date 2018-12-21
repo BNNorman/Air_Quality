@@ -36,6 +36,7 @@
 #define LOG_INTERVAL 60   // seconds between published messages
 #define SAMPLE_INTERVAL 1 // seconds between sensor samples - zph01 must be >=1s
 #define AVERAGE_SIZE 30   // number of samples in rolling average
+#define MAX_PAYLOAD 100		// maximum payload size
 
 const char* ssid = "ssidssidssid";   // local Wifi
 const char* password = "pwdpwdpwd";
@@ -246,7 +247,7 @@ void setup() {
 ////////////// SENSORS //////////////
 // read the sensors
 
-char payload[100]="";
+char payload[MAX_PAYLOAD]="";
 uint32_t nxtLog=now();  // forces immediate publish, then waits LOG_INTERVAL
 
 void readSensors()
@@ -274,7 +275,7 @@ void readSensors()
       updateDisplay(zphstr,sharpstr);
 
       // create some simple JSON
-      snprintf(payload,sizeof payload,payloadFormat,timeClient.getEpochTime(),sharpstr,zphstr);
+      snprintf(payload,MAX_PAYLOAD,payloadFormat,timeClient.getEpochTime(),sharpstr,zphstr);
       client.publish(MQTT_TOPIC,payload);
       Serial.println("Payload sent");
       }
