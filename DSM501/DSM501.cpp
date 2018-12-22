@@ -6,27 +6,28 @@
  namespace DSM {
  	using namespace std;
 	
+	// lowTime,cumLowTime and intCount may all be changed by the ISR routines
 	namespace PM25
 	{
 	//using namespace std;
-	uint32_t  	sampleTimeWindow=0;	// typically 30 seconds converted to millisec
-	uint32_t	sampleStartTime=0;	// time when sampling started (ms)
+	uint32_t  	sampleTimeWindow=0;			// typically 30 seconds converted to millisec
+	uint32_t	sampleStartTime=0;			// time when sampling started (ms)
 	volatile uint32_t  	lowTime=0;  		// millisec when sensorPin went low
 	uint8_t   	sensorPin=0;
-	volatile uint32_t		cumLowTime=0;		// millisec	
-	float		lastReading=-1;		// flag idicates value to be ignored	
+	volatile uint32_t		cumLowTime=0;	// millisec	
+	float		lastReading=-1;				// flag idicates value to be ignored	
 	volatile uint32_t	intCount=0;
 	}
 	
 	namespace PM10
 	{
 	//using namespace std;
-	uint32_t  	sampleTimeWindow=0;	// typically 30 seconds converted to millisec
-	uint32_t	sampleStartTime=0;	// time when sampling started (ms)
+	uint32_t  	sampleTimeWindow=0;			// typically 30 seconds converted to millisec
+	uint32_t	sampleStartTime=0;			// time when sampling started (ms)
 	volatile uint32_t  	lowTime=0;  		// millisec when sensorPin went low
 	uint8_t   	sensorPin=0;
-	volatile uint32_t		cumLowTime=0;		// millisec
-	float		lastReading=-1;		// flag idicates value to be ignored
+	volatile uint32_t		cumLowTime=0;	// millisec
+	float		lastReading=-1;				// flag idicates value to be ignored
 	volatile uint32_t	intCount=0;
 	}
 
@@ -58,24 +59,27 @@
   
   uint32_t pm10IntCount()
 	{
-	// debugging only
+	// debugging only to check interrupts have occurred
 	return DSM::PM25::intCount;
 	}
 	
   uint32_t pm25IntCount()
 	{
-	// debugging only
+	// debugging only  to check interrupts have occurred
 	return DSM::PM25::intCount;
 	}
   
   void pm10BeginSample()
   {
-	// resets the cumulative low time then starts a new sample
+	// resets the cumulative low time, intCount and sample start time then starts a new sample
+	// interrupts are disabled because we are changing volatile variables
     noInterrupts();
 	DSM::PM10::cumLowTime=0;
 	DSM::PM10::intCount=0;
 	DSM::PM10::sampleStartTime=millis();
+	
 	// sensor may already be low
+	// so start timing immediately
 	if (digitalRead(DSM::PM10::sensorPin)==0)
 		{
 		DSM::PM10::lowTime=DSM::PM10::sampleStartTime;
@@ -86,11 +90,14 @@
    void pm25BeginSample()
   {
   	// resets the cumulative low time then starts a new sample
+	// interrupts are disabled because we are changing volatile variables
 	noInterrupts();
 	DSM::PM25::cumLowTime=0;
 	DSM::PM25::intCount=0;
 	DSM::PM25::sampleStartTime=millis();
+	
 	// sensor may already be low
+	// so start timing immediately
 	if (digitalRead(DSM::PM25::sensorPin)==0)
 		{
 		DSM::PM25::lowTime=DSM::PM25::sampleStartTime;
@@ -109,7 +116,7 @@ float calcDensity(float min, float max, float ratio,float minDensity)
 float getDensity(float ratio)
 	{
 	// not elegant but produces a very good fit with manuf charts
-	// calcs are not long so numbers left to clarify
+	// treats the chart as a set of linear segments
 	// returns mg/m^3
 
 	// NOTE, there are a number of 'clever' formulas on the internet BUT
@@ -135,27 +142,32 @@ float getDensity(float ratio)
 
 float pm10Ratio()
   {
-	// rteurns the pm10 ratio (%) or -1 if the sample time window has not
+	// returns the pm10 ratio (%) or -1 if the sample time window has not
 	// been reached
+	noInterrupts();
 	uint32_t now=millis();
 	uint32_t elapsed=now-DSM::PM10::sampleStartTime;
 	
 	// has the sample time been reached?
 	if (elapsed>=DSM::PM10::sampleTimeWindow)
 		{
-		// if the pin is still low add on the extra
+		// if the pin is still low assume it has gone high
 		if (digitalRead(DSM::PM10::sensorPin)==LOW)
 			{
 			DSM::PM10::cumLowTime=DSM::PM10::cumLowTime+now-DSM::PM10::lowTime;
 			}
 		
-		// cumLowTime is an int, so is elapsed
+		// cumLowTime & elapsed are ints
 		// division results in zero so coerse the division into a float
-		return 100*((float)PM10::cumLowTime/(float)elapsed);	// percentage
-		
+		float ratio=(float)PM10::cumLowTime/(float)elapsed;
+		interrupts();
+		if (ratio<0) return 0.0;
+		if (ratio>1) return 100.0;
+		return 100*ratio;	// percentage
 		}
 		
 	// sampleTimeWindow not reached
+	interrupts();
 	return -1;
   }
   
@@ -176,6 +188,7 @@ float pm10Ratio()
   {
 	// calculate the low occupancy ratio (%)
 	// returns -1 if the sample end time has not been reached
+	noInterrupts();
 	uint32_t now=millis();
 	uint32_t elapsed=now-DSM::PM25::sampleStartTime;
 	
@@ -190,10 +203,15 @@ float pm10Ratio()
 				
 		// cumLowTime is an int, so is elapsed
 		// division results in zero so coerse the division into a float
-		return 100.0*( (float)DSM::PM25::cumLowTime/(float)elapsed);	//percentage
+		float ratio=(float)DSM::PM25::cumLowTime/(float)elapsed;
+		interrupts();
+		if (ratio<0) return 0.0;
+		if (ratio>1) return 100.0;
+		return 100.0*ratio;	//percentage
 		}
 		
 	// signal sample as invalid (sampleTimeWindow not reached)
+	interrupts();
 	return -1;
   }
   
