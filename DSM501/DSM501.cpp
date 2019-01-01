@@ -236,7 +236,12 @@ float pm10Ratio()
 */
   
   
-  static void PM10_ISR_CHANGE()
+  
+	#if defined(ESP_PLATFORM)
+	static void IRAM_ATTR PM10_ISR_CHANGE()
+	#else
+	static void PM10_ISR_CHANGE()
+	#endif
   {
 	
     uint8_t state=digitalRead(DSM::PM10::sensorPin);
@@ -257,12 +262,15 @@ float pm10Ratio()
 	
   }
   
-   
+ #if defined(ESP_PLATFORM)
+  static void IRAM_ATTR PM25_ISR_CHANGE()
+ #else
   static void PM25_ISR_CHANGE()
-  {
+ #endif
+	{
 	
     uint8_t state=digitalRead(DSM::PM25::sensorPin);
-	uint32_t now=0; //millis();
+	uint32_t now=millis();
 	
 	DSM::PM25::intCount++;
 	
