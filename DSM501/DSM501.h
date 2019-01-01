@@ -1,4 +1,11 @@
 /***
+* DSM501.h
+*
+* Driver for DSM501 dust sensor using interrupts to compute low occupancy and
+* return dust density in ug/m^3
+*
+* NOTICE: If you must use interrupt capable input pins - otherwise you are likely to get
+* a 100% low occupancy and hence max density (1400ug/m^3) 
 *
 *
 ***/
@@ -35,9 +42,16 @@ float 	 getDensity(float ratio);
 
 void 	End();						// detaches ALL interrupts
 
- 
+// added special case for ESP32 - ref RadioHead issue
+
+#if defined(ESP32_PLATFORM)
+static void IRAM_ATTR PM25_ISR_CHANGE();		// interrupt service routine
+static void IRAM_ATTR PM10_ISR_CHANGE();
+#else
 static void PM25_ISR_CHANGE();		// interrupt service routine
 static void PM10_ISR_CHANGE();
+#endif
+
 }
 
 #endif
