@@ -1,10 +1,15 @@
-#ifndef ZPH01_H
-#define ZPH01_H
+/*
+ZPH01.h
+
+Non-blocking code for reading the serial data stream from a ZPH01 sensor
+
+*/
+#pragma once
 
 #include <arduino.h>
 
 
-//  Serial data format
+//  Serial data format (9 bytes)
 //
 // uint8_t	StartByte;			0xFF
 // uint8_t	DetectionType;		0x18 in datasheet
@@ -18,27 +23,34 @@
 //
 
 
-#define RECV_TIMEOUT 2000	// 2 SECONDS
 
 class ZPH01
 {
+enum ZPH01_SENSOR_STATUS {pendingFF,pending18,reading};	// used to control loop()
+
 
 public:
 	// take input from any stream object
-	ZPH01(Stream &s):serial(s){};
-		
-	// returns -1 if no serial data available
+	ZPH01(Stream &s);
+	
+	// getLowPercent()
+	// returns -1 if no serial data available (dataValid=false)
 	// could be a timeout or invalid checksum
 	// otherwise returns the %
-	float GetLowPercent();
+	float getLowPercent();
+	
+	bool dataValid=false;	// set after a sucessful read
+	
+	// loop() is non-blocking
+	// if data capture is successful it sets dataValid. You should test this
+	void loop();			// call in loop() to capture data - non-blocking
 
 private:
-	Stream& serial;
-	uint8_t Data[9]={0};
+	Stream *_ss;			
+	uint8_t rxData[9]={0};
 	
-	bool Validate(uint8_t Checksum);
-	bool ReceiveData();
+	bool validate();
+	ZPH01_SENSOR_STATUS sensorStatus=pendingFF;
+	uint8_t count=0;
+	float lowPulseRate=0;
 };
-
-
-#endif
