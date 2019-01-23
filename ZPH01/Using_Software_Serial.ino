@@ -22,24 +22,16 @@ void setup() {
   sensor.begin(9600);
 
   Serial.println("Checking for serial data from Sensor");
-
-  uint32_t Now=millis();
-  
-  if (!ss.available())
-    {
-      // sensor may not become ready for 10 secconds
-      if (millis()-Now>10000)
-        {          
-        Serial.println("No serial data from sensor");
-        while(1);    
-        }
-    }
   
 }
 
 
 void loop() 
 { 
+  sensor.loop();  // needed for non-blocking working
+  
+  // this returns -1 until valid data has been read
+  // valid data is cached till new data has been received.
  float LowPercent=sensor.GetLowPercent();
 
  Serial.print("Low pulse rate %=");
