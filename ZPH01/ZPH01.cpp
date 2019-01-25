@@ -57,6 +57,7 @@ switch (sensorStatus){
 		}
 		rxData[count++]=ch;
 		sensorStatus=reading;
+		break;
 		
 	case reading:
 		rxData[count++]=ch;
