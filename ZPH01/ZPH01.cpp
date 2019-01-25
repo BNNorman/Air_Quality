@@ -63,7 +63,10 @@ switch (sensorStatus){
 		if (count<9) return;
 
 		if (validate()){
-			lowPulseRate=rxData[3]+0.1*rxData[4];
+			// rxData[3] has a range 0->99
+			// rxData[4] also has a range 0->99
+			// so the complete range is 0->99.99
+			lowPulseRate=rxData[3]+0.01*rxData[4];
 			dataValid=true;
 			}
 			
