@@ -1,4 +1,4 @@
-* Sensor Simulators *
+# Sensor Simulators #
 
 You've ordered a sensor from Aliexpress but it's going to take a number of weeks before it turns up.
 
