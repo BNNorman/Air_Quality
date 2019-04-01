@@ -10,11 +10,11 @@ You can use any serial stream. e.g.
 		#include <SoftwareSerial.h>
 		SoftwareSerial SS(11,12);	// rx,tx pins
 		
-		PMS7003::init(SS);
+		PMS7003 pms(SS);
 		
 	for a Heltec or similar with more than one HDW serial port
 	
-		PMS7003::init(Serial2);	
+		PMS7003 pms(Serial2);	
 	
 In setup():-
 
@@ -26,13 +26,13 @@ In setup():-
 
 In loop():-
 
-	PMS7003::readSensor();	// it is non-blocking
+	PMS7003.loop();	// it is non-blocking
 
-	if (PMS7003::dataValid)
+	if (PMS7003.dataValid)
 		{
-		Serial.print("Atmospheric pm1.0="); Serial.println(PMS7003::AT_PM1_0);
-		Serial.print("Atmospheric pm2.5="); Serial.println(PMS7003::AT_PM2_5);
-		Serial.print("Atmospheric pm10.0="); Serial.println(PMS7003::AT_PM10_0);
+		Serial.print("Atmospheric pm1.0="); Serial.println(PMS7003.AT_PM1_0);
+		Serial.print("Atmospheric pm2.5="); Serial.println(PMS7003.AT_PM2_5);
+		Serial.print("Atmospheric pm10.0="); Serial.println(PMS7003.AT_PM10_0);
 		}
 
 */
@@ -44,8 +44,6 @@ In loop():-
 
 #define MAXDATA	32	// number of bytes in the PMS7003 transmission
 
-// used to control readSensor()
-enum SENSOR_STATUS {waiting42,waiting4D,frameLenH,frameLenL,readingData};
 
 class PMS7003{
 
@@ -74,8 +72,10 @@ public:
 	// The validated data is retained until the next validated reading
 	// dataValid is set fals when sensorSleep() or sensorWakeup() are called
 
-	bool dataValid=false;		// set if validated dat is valid
-
+	bool dataValid=false;					// set if validated data is valid
+	uint32_t invalidChecksumCount=0;		// for detecting peristent problems, cleared if dataValid
+	bool dataAvailable=false;				// set true if data is being read in
+	uint8_t frameLen=0;						// calculated frame length (excludes first 4 bytes)
 	/*
 	* PMS7003(SensorSerial)
 	*
@@ -100,28 +100,43 @@ public:
 	*/
 
 	void sensorWakeup();
+	
+	/*
+	*
+	* bool sensorSleeping();
+	*
+	* returns true if the sensor is sleeping
+	*/
+	
+	bool sensorSleeping();
 
 	/*
 
-	readSensor() is a non-blocking method to gather up the data stream and validate it 
+	loop() is a non-blocking method to continuously gather up the data stream and validate it 
 
 	This should be called from loop().
 
 	*/
 
-	void readSensor();
+	void loop();
 
+	
 private:
 	// private variables
+	
+	// used to control readSensor()
+	enum SENSOR_STATUS {waiting42,waiting4D,frameLenH,frameLenL,readingData,sleeping};
+
 
 	Stream *_ss;
 	uint8_t data[MAXDATA];
 
-	uint8_t count=0;		// used as an index into data
+	uint8_t count=0;		// num chars received used as an index into data[]
 	uint32_t startTime=0;	// used to timeout if a data stream starts but doesn't end
-	uint8_t frameLen=0;		// calculated frame length (excludes first 4 bytes)
+
 	uint32_t chkSum=0;		// accumulated checksum
 
 	SENSOR_STATUS sensorStatus=waiting42;
+
 
 }; // class
