@@ -1,4 +1,4 @@
-# ESPeasy Mega Initial Setup
+# ESP Easy Mega Initial Setup
 
 Access to the WeMOS or nodeMCU is done via a web interface. Since my sensors are
 in a box outside this saves some leg work. 
